@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { SkillType } from '../types';
 import { getAllSkills } from '../data';
+import { ALL_UPGRADES } from '../data/upgrades';
 import { useGameStore } from '../store/gameStore';
 
 interface SidebarProps {
@@ -62,8 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Calculate total inventory count
   const inventoryCount = Object.keys(gameState.inventory).length;
 
-  // Calculate total upgrades (48 total)
-  const totalUpgrades = 48;
+  // Calculate total upgrades count
   const purchasedCount = purchasedUpgrades.size;
 
   return (
@@ -146,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Text style={styles.skillIcon}>⚡</Text>
               <View style={styles.skillInfo}>
                 <Text style={styles.skillName}>Upgrade Shop</Text>
-                <Text style={styles.skillLevel}>{purchasedCount}/{totalUpgrades}</Text>
+                <Text style={styles.skillLevel}>{purchasedCount}/{ALL_UPGRADES.length}</Text>
               </View>
               {upgradeShopSelected && (
                 <View style={styles.selectedIndicator} />

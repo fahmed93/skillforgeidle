@@ -429,10 +429,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       state.removeResource(req.resourceId, req.quantity);
     });
 
-    // Add to purchased upgrades
-    set(currentState => ({
-      purchasedUpgrades: new Set([...currentState.purchasedUpgrades, upgradeId]),
-    }));
+    // Add to purchased upgrades (more efficient than spreading)
+    set(currentState => {
+      const newSet = new Set(currentState.purchasedUpgrades);
+      newSet.add(upgradeId);
+      return { purchasedUpgrades: newSet };
+    });
 
     // Show success toast
     state.addToast({
@@ -512,8 +514,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const loadedState = await loadGameState();
 
       if (loadedState) {
-        // Convert array to Set
-        const purchasedUpgrades = new Set(loadedState.purchasedUpgrades || []);
+        // Convert array to Set, with validation
+        const upgradesArray = Array.isArray(loadedState.purchasedUpgrades) 
+          ? loadedState.purchasedUpgrades 
+          : [];
+        const purchasedUpgrades = new Set(upgradesArray);
         
         set({
           gameState: loadedState,
