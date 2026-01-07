@@ -1,8 +1,10 @@
 # Spec: Core Game System
 
-**Status**: Draft  
+**Status**: Ready for Implementation  
 **Version**: 1.0  
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-07  
+**Implementation Plan**: [01-core-game-system.plan.md](01-core-game-system.plan.md)  
+**Task Breakdown**: [01-core-game-system.tasks.md](01-core-game-system.tasks.md)
 
 ## Overview
 The core game system manages the fundamental mechanics of SkillForge Idle, including game loop, state management, and player progression tracking.
