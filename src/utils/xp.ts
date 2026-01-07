@@ -3,9 +3,9 @@
 /**
  * Calculate XP required for a specific level
  * Formula: floor(level + 300 * 2^(level/7)) / 4
+ * Returns XP needed to reach this level from level 1
  */
 export function xpForLevel(level: number): number {
-  if (level <= 1) {return 0;}
   return Math.floor(level + 300 * Math.pow(2, level / 7)) / 4;
 }
 
@@ -45,6 +45,8 @@ export function getProgressToNextLevel(currentXp: number, currentLevel: number):
   const xpForNextLevel = totalXpForLevel(currentLevel + 1);
   const xpIntoLevel = currentXp - xpForCurrentLevel;
   const xpNeededForLevel = xpForNextLevel - xpForCurrentLevel;
+
+  if (xpNeededForLevel === 0) {return 0;}
 
   return (xpIntoLevel / xpNeededForLevel) * 100;
 }
