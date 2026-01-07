@@ -85,6 +85,9 @@ function App(): React.JSX.Element {
             <Text style={styles.appTitle}>⚔️ SkillForge Idle</Text>
           </View>
 
+          {/* Active Training View - Always visible when training */}
+          <ActiveTrainingView />
+
           {/* Main Content */}
           {selectedSkill ? (
             <SkillTrainingView skillType={selectedSkill} />
@@ -96,20 +99,6 @@ function App(): React.JSX.Element {
                   Tap the menu button (☰) in the top-left corner to select a skill and start training.
                 </Text>
               </View>
-        {/* Active Training View - Always visible when training */}
-        <ActiveTrainingView />
-
-        {/* Main Content */}
-        {selectedSkill ? (
-          <SkillTrainingView skillType={selectedSkill} />
-        ) : (
-          <ScrollView contentContainerStyle={styles.scrollView}>
-            <View style={styles.welcomeSection}>
-              <Text style={styles.welcomeTitle}>Welcome to SkillForge Idle!</Text>
-              <Text style={styles.welcomeText}>
-                Tap the menu button (☰) in the top-left corner to select a skill and start training.
-              </Text>
-            </View>
 
               {/* Game Status */}
               <View style={styles.section}>
