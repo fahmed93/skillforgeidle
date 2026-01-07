@@ -23,6 +23,7 @@ import { formatNumber, getProgressToNextLevel } from './src/utils/xp';
 import { Sidebar } from './src/components/Sidebar';
 import { SkillTrainingView } from './src/components/SkillTrainingView';
 import { ToastContainer } from './src/components/ToastContainer';
+import { ActiveTrainingView } from './src/components/ActiveTrainingView';
 
 function App(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
@@ -95,6 +96,20 @@ function App(): React.JSX.Element {
                   Tap the menu button (☰) in the top-left corner to select a skill and start training.
                 </Text>
               </View>
+        {/* Active Training View - Always visible when training */}
+        <ActiveTrainingView />
+
+        {/* Main Content */}
+        {selectedSkill ? (
+          <SkillTrainingView skillType={selectedSkill} />
+        ) : (
+          <ScrollView contentContainerStyle={styles.scrollView}>
+            <View style={styles.welcomeSection}>
+              <Text style={styles.welcomeTitle}>Welcome to SkillForge Idle!</Text>
+              <Text style={styles.welcomeText}>
+                Tap the menu button (☰) in the top-left corner to select a skill and start training.
+              </Text>
+            </View>
 
               {/* Game Status */}
               <View style={styles.section}>
