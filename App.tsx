@@ -14,22 +14,25 @@ import {
   View,
   Button,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { useGameStore } from './src/store/gameStore';
 import { useGameLoop } from './src/hooks/useGameLoop';
-import { useSkillTraining } from './src/hooks/useSkillTraining';
 import { SkillType } from './src/types';
 import { formatNumber, getProgressToNextLevel } from './src/utils/xp';
+import { Sidebar } from './src/components/Sidebar';
+import { SkillTrainingView } from './src/components/SkillTrainingView';
 
 function App(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null);
+
   const loadGame = useGameStore(state => state.loadGame);
   const saveGame = useGameStore(state => state.saveGame);
   const skills = useGameStore(state => state.gameState.skills);
   const inventory = useGameStore(state => state.gameState.inventory);
   const isInitialized = useGameStore(state => state.isInitialized);
-
-  const { isTraining, currentActivity, progress, timeRemaining, startActivity, stopActivity } = useSkillTraining();
 
   // Initialize game loop
   useGameLoop();
@@ -39,12 +42,12 @@ function App(): React.JSX.Element {
     loadGame().finally(() => setIsLoading(false));
   }, [loadGame]);
 
-  // Test function to start woodcutting
-  const testStartWoodcutting = () => {
-    const success = startActivity(SkillType.WOODCUTTING, 'regular_tree');
-    if (!success) {
-      console.log('Failed to start woodcutting');
-    }
+  const handleSelectSkill = (skillType: SkillType) => {
+    setSelectedSkill(skillType);
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
   if (isLoading) {
@@ -61,104 +64,90 @@ function App(): React.JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        <View style={styles.header}>
-          <Text style={styles.title}>⚔️ SkillForge Idle</Text>
-          <Text style={styles.subtitle}>Core Game System - Implemented!</Text>
+
+      {/* Sidebar */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        selectedSkill={selectedSkill}
+        onClose={() => setSidebarOpen(false)}
+        onSelectSkill={handleSelectSkill}
+      />
+
+      <View style={styles.mainContainer}>
+        {/* Header with menu button */}
+        <View style={styles.appHeader}>
+          <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
+            <Text style={styles.menuIcon}>☰</Text>
+          </TouchableOpacity>
+          <Text style={styles.appTitle}>⚔️ SkillForge Idle</Text>
         </View>
 
-        {/* Game Status */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎮 Game Status</Text>
-          <Text style={styles.text}>✓ State Management (Zustand)</Text>
-          <Text style={styles.text}>✓ Persistence (AsyncStorage)</Text>
-          <Text style={styles.text}>✓ Game Loop (60 FPS)</Text>
-          <Text style={styles.text}>✓ Auto-save (30s)</Text>
-          <Text style={styles.text}>Game Initialized: {isInitialized ? '✓' : '✗'}</Text>
-        </View>
-
-        {/* Skills Overview */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Skills</Text>
-          {Object.entries(skills).map(([skillType, skillState]) => {
-            const progressPercent = getProgressToNextLevel(skillState.experience, skillState.level);
-            return (
-              <View key={skillType} style={styles.skillRow}>
-                <Text style={styles.skillName}>
-                  {skillType.charAt(0).toUpperCase() + skillType.slice(1)}
-                </Text>
-                <Text style={styles.skillLevel}>
-                  Lv {skillState.level} ({formatNumber(skillState.experience)} XP)
-                </Text>
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-                </View>
-                <Text style={styles.progressText}>{progressPercent.toFixed(1)}%</Text>
-              </View>
-            );
-          })}
-        </View>
-
-        {/* Training Status */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚒️ Training Status</Text>
-          {isTraining && currentActivity ? (
-            <>
-              <Text style={styles.text}>Training: {currentActivity.name}</Text>
-              <Text style={styles.text}>
-                Progress: {progress.toFixed(1)}%
+        {/* Main Content */}
+        {selectedSkill ? (
+          <SkillTrainingView skillType={selectedSkill} />
+        ) : (
+          <ScrollView contentContainerStyle={styles.scrollView}>
+            <View style={styles.welcomeSection}>
+              <Text style={styles.welcomeTitle}>Welcome to SkillForge Idle!</Text>
+              <Text style={styles.welcomeText}>
+                Tap the menu button (☰) in the top-left corner to select a skill and start training.
               </Text>
-              <Text style={styles.text}>
-                Time Remaining: {Math.ceil(timeRemaining / 1000)}s
-              </Text>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    styles.trainingProgress,
-                    {width: `${progress}%`},
-                  ]}
-                />
-              </View>
-              <Button title="Stop Training" onPress={stopActivity} color="#f44336" />
-            </>
-          ) : (
-            <>
-              <Text style={styles.text}>Not training</Text>
-              <Button title="Test: Start Woodcutting" onPress={testStartWoodcutting} />
-            </>
-          )}
-        </View>
+            </View>
 
-        {/* Inventory */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎒 Inventory</Text>
-          {Object.keys(inventory).length === 0 ? (
-            <Text style={styles.text}>Empty</Text>
-          ) : (
-            Object.entries(inventory).map(([resourceId, quantity]) => (
-              <Text key={resourceId} style={styles.text}>
-                {resourceId}: {quantity}
-              </Text>
-            ))
-          )}
-        </View>
+            {/* Game Status */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🎮 Game Status</Text>
+              <Text style={styles.text}>✓ State Management (Zustand)</Text>
+              <Text style={styles.text}>✓ Persistence (AsyncStorage)</Text>
+              <Text style={styles.text}>✓ Game Loop (60 FPS)</Text>
+              <Text style={styles.text}>✓ Auto-save (30s)</Text>
+              <Text style={styles.text}>Game Initialized: {isInitialized ? '✓' : '✗'}</Text>
+            </View>
 
-        {/* Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>💾 Actions</Text>
-          <Button title="Manual Save" onPress={saveGame} />
-        </View>
+            {/* Skills Overview */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>📊 Skills</Text>
+              {Object.entries(skills).map(([skillType, skillState]) => {
+                const progressPercent = getProgressToNextLevel(skillState.experience, skillState.level);
+                return (
+                  <View key={skillType} style={styles.skillRow}>
+                    <Text style={styles.skillName}>
+                      {skillType.charAt(0).toUpperCase() + skillType.slice(1)}
+                    </Text>
+                    <Text style={styles.skillLevel}>
+                      Lv {skillState.level} ({formatNumber(skillState.experience)} XP)
+                    </Text>
+                    <View style={styles.progressBar}>
+                      <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+                    </View>
+                    <Text style={styles.progressText}>{progressPercent.toFixed(1)}%</Text>
+                  </View>
+                );
+              })}
+            </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            📋 Core game system fully implemented
-          </Text>
-          <Text style={styles.footerText}>
-            See specs/01-core-game-system.md for details
-          </Text>
-        </View>
-      </ScrollView>
+            {/* Inventory */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🎒 Inventory</Text>
+              {Object.keys(inventory).length === 0 ? (
+                <Text style={styles.text}>Empty</Text>
+              ) : (
+                Object.entries(inventory).map(([resourceId, quantity]) => (
+                  <Text key={resourceId} style={styles.text}>
+                    {resourceId}: {quantity}
+                  </Text>
+                ))
+              )}
+            </View>
+
+            {/* Actions */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>💾 Actions</Text>
+              <Button title="Manual Save" onPress={saveGame} />
+            </View>
+          </ScrollView>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
@@ -167,6 +156,56 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  mainContainer: {
+    flex: 1,
+  },
+  appHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  menuButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  menuIcon: {
+    fontSize: 28,
+    color: '#333',
+  },
+  appTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  welcomeSection: {
+    backgroundColor: '#e8f4f8',
+    padding: 20,
+    marginBottom: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  welcomeTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
   },
   centered: {
     flex: 1,
@@ -180,31 +219,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     padding: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
-    paddingVertical: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#4caf50',
-    textAlign: 'center',
-    paddingHorizontal: 20,
-    fontWeight: '600',
   },
   section: {
     backgroundColor: '#fff',
@@ -256,27 +270,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#4a90e2',
     borderRadius: 10,
   },
-  trainingProgress: {
-    backgroundColor: '#4caf50',
-  },
   progressText: {
     fontSize: 12,
     color: '#888',
     marginTop: 2,
     textAlign: 'right',
-  },
-  footer: {
-    marginTop: 20,
-    padding: 20,
-    backgroundColor: '#e8f4f8',
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 4,
   },
 });
 
