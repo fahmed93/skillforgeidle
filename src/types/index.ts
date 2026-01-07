@@ -74,6 +74,8 @@ export interface Resource {
   name: string;
   description: string;
   icon: string;
+  goldValue?: number; // Optional - for future trading system
+  rarity?: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'; // Optional - for future feature
 }
 
 export enum ToastType {
