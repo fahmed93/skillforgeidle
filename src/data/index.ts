@@ -23,3 +23,6 @@ export const getActivityById = (skillType: SkillType, activityId: string) => {
   const skill = getSkillById(skillType);
   return skill?.activities.find(a => a.id === activityId);
 };
+
+// Export resource functions
+export { getResourceById, getAllResources, getResourceCount } from './resources';
