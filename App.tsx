@@ -22,11 +22,13 @@ import { SkillType } from './src/types';
 import { formatNumber, getProgressToNextLevel } from './src/utils/xp';
 import { Sidebar } from './src/components/Sidebar';
 import { SkillTrainingView } from './src/components/SkillTrainingView';
+import { InventoryView } from './src/components/inventory/InventoryView';
 
 function App(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null);
+  const [selectedView, setSelectedView] = useState<'skills' | 'inventory'>('skills');
 
   const loadGame = useGameStore(state => state.loadGame);
   const saveGame = useGameStore(state => state.saveGame);
@@ -44,6 +46,12 @@ function App(): React.JSX.Element {
 
   const handleSelectSkill = (skillType: SkillType) => {
     setSelectedSkill(skillType);
+    setSelectedView('skills');
+  };
+
+  const handleSelectView = (view: 'inventory') => {
+    setSelectedView(view);
+    setSelectedSkill(null);
   };
 
   const toggleSidebar = () => {
@@ -69,8 +77,10 @@ function App(): React.JSX.Element {
       <Sidebar
         isOpen={sidebarOpen}
         selectedSkill={selectedSkill}
+        selectedView={selectedView}
         onClose={() => setSidebarOpen(false)}
         onSelectSkill={handleSelectSkill}
+        onSelectView={handleSelectView}
       />
 
       <View style={styles.mainContainer}>
@@ -83,7 +93,9 @@ function App(): React.JSX.Element {
         </View>
 
         {/* Main Content */}
-        {selectedSkill ? (
+        {selectedView === 'inventory' ? (
+          <InventoryView />
+        ) : selectedSkill ? (
           <SkillTrainingView skillType={selectedSkill} />
         ) : (
           <ScrollView contentContainerStyle={styles.scrollView}>
