@@ -3,7 +3,10 @@
 /**
  * Calculate XP required for a specific level
  * Formula: floor(level + 300 * 2^(level/7)) / 4
- * Returns XP needed to reach this level from level 1
+ *
+ * This is the XP value for a specific level in the progression curve.
+ * For level 1, returns 83 XP (the XP needed from 0 to reach level 2 in the original formula).
+ * This function is used by totalXpForLevel() to calculate cumulative XP.
  */
 export function xpForLevel(level: number): number {
   return Math.floor(level + 300 * Math.pow(2, level / 7)) / 4;
