@@ -1,13 +1,25 @@
 import { create } from 'zustand';
-import { GameState, SkillType, SkillState, ResourceRequirement } from '../types';
+import {
+  GameState,
+  SkillType,
+  SkillState,
+  ResourceRequirement,
+  InventoryItem,
+  InventorySortOption,
+  InventoryUIState,
+} from '../types';
 import { getLevelFromXp } from '../utils/xp';
 import { getSkillById, getActivityById } from '../data';
+import { getItemMetadata } from '../data/items-metadata';
 import { saveGameState, loadGameState } from '../utils/save';
 
 interface GameStore {
   // State
   gameState: GameState;
   isInitialized: boolean;
+
+  // Inventory UI State
+  inventoryUIState: InventoryUIState;
 
   // Initialization
   initializeNewGame: () => void;
@@ -23,6 +35,14 @@ interface GameStore {
   addResource: (resourceId: string, quantity: number) => void;
   removeResource: (resourceId: string, quantity: number) => boolean;
   hasResources: (requirements: ResourceRequirement[]) => boolean;
+
+  // Inventory actions
+  setInventorySortBy: (sortBy: InventorySortOption) => void;
+  setInventorySearchQuery: (query: string) => void;
+  getInventoryItems: () => InventoryItem[];
+  getFilteredInventoryItems: () => InventoryItem[];
+  getTotalInventoryValue: () => number;
+  getInventoryItemCount: () => number;
 
   // Training actions
   startTraining: (skillType: SkillType, activityId: string) => boolean;
@@ -90,6 +110,12 @@ function createInitialGameState(): GameState {
 export const useGameStore = create<GameStore>((set, get) => ({
   gameState: createInitialGameState(),
   isInitialized: false,
+
+  // Inventory UI State
+  inventoryUIState: {
+    sortBy: InventorySortOption.ALPHABETICAL,
+    searchQuery: '',
+  },
 
   initializeNewGame: () => {
     set({
@@ -315,6 +341,96 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
 
     return false;
+  },
+
+  // Inventory Management
+  setInventorySortBy: (sortBy: InventorySortOption) => {
+    set(state => ({
+      inventoryUIState: {
+        ...state.inventoryUIState,
+        sortBy,
+      },
+    }));
+  },
+
+  setInventorySearchQuery: (query: string) => {
+    set(state => ({
+      inventoryUIState: {
+        ...state.inventoryUIState,
+        searchQuery: query,
+      },
+    }));
+  },
+
+  getInventoryItems: () => {
+    const state = get();
+    const inventory = state.gameState.inventory;
+
+    // Convert inventory quantities to InventoryItem objects
+    const items: InventoryItem[] = Object.entries(inventory)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([resourceId, quantity]) => {
+        const metadata = getItemMetadata(resourceId);
+        if (!metadata) {
+          // Fallback for items without metadata
+          return {
+            id: resourceId,
+            name: resourceId,
+            description: 'No description available',
+            icon: '📦',
+            goldValue: 0,
+            category: 'other' as const,
+            quantity,
+            totalValue: 0,
+          };
+        }
+        return {
+          ...metadata,
+          quantity,
+          totalValue: metadata.goldValue * quantity,
+        };
+      });
+
+    return items;
+  },
+
+  getFilteredInventoryItems: () => {
+    const state = get();
+    let items = state.getInventoryItems();
+
+    // Apply search filter
+    const query = state.inventoryUIState.searchQuery.toLowerCase();
+    if (query) {
+      items = items.filter(item =>
+        item.name.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply sorting
+    const sortBy = state.inventoryUIState.sortBy;
+    switch (sortBy) {
+      case InventorySortOption.ALPHABETICAL:
+        items = items.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case InventorySortOption.GOLD_VALUE:
+        items = items.sort((a, b) => b.goldValue - a.goldValue);
+        break;
+      case InventorySortOption.ITEM_COUNT:
+        items = items.sort((a, b) => b.quantity - a.quantity);
+        break;
+    }
+
+    return items;
+  },
+
+  getTotalInventoryValue: () => {
+    return get().getInventoryItems()
+      .reduce((total, item) => total + item.totalValue, 0);
+  },
+
+  getInventoryItemCount: () => {
+    return get().getInventoryItems().length;
   },
 
   // Persistence

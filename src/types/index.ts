@@ -75,3 +75,29 @@ export interface Resource {
   description: string;
   icon: string;
 }
+
+// Inventory System Types
+export interface ItemMetadata {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  goldValue: number;
+  category: 'wood' | 'ore' | 'fish' | 'food' | 'bar' | 'crafted' | 'other';
+}
+
+export interface InventoryItem extends ItemMetadata {
+  quantity: number;
+  totalValue: number;
+}
+
+export enum InventorySortOption {
+  ALPHABETICAL = 'alphabetical',
+  GOLD_VALUE = 'gold_value',
+  ITEM_COUNT = 'item_count',
+}
+
+export interface InventoryUIState {
+  sortBy: InventorySortOption;
+  searchQuery: string;
+}
