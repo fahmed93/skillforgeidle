@@ -1,0 +1,62 @@
+# Node modules
+node_modules/
+
+# React Native
+.expo/
+.expo-shared/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+dist/
+
+# macOS
+.DS_Store
+
+# iOS
+ios/Pods/
+ios/build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+DerivedData/
+
+# Android
+android/app/build/
+android/.gradle/
+android/build/
+*.apk
+*.ap_
+*.aab
+
+# Build
+build/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.jest/
+
+# Temporary
+tmp/
+temp/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Debug
+*.log
+yarn-error.log*
