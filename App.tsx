@@ -22,6 +22,7 @@ import { SkillType } from './src/types';
 import { formatNumber, getProgressToNextLevel } from './src/utils/xp';
 import { Sidebar } from './src/components/Sidebar';
 import { SkillTrainingView } from './src/components/SkillTrainingView';
+import { ActiveTrainingView } from './src/components/ActiveTrainingView';
 
 function App(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
@@ -81,6 +82,9 @@ function App(): React.JSX.Element {
           </TouchableOpacity>
           <Text style={styles.appTitle}>⚔️ SkillForge Idle</Text>
         </View>
+
+        {/* Active Training View - Always visible when training */}
+        <ActiveTrainingView />
 
         {/* Main Content */}
         {selectedSkill ? (
