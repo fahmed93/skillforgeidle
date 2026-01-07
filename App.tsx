@@ -24,11 +24,13 @@ import { Sidebar } from './src/components/Sidebar';
 import { SkillTrainingView } from './src/components/SkillTrainingView';
 import { ToastContainer } from './src/components/ToastContainer';
 import { ActiveTrainingView } from './src/components/ActiveTrainingView';
+import { InventoryScreen } from './src/components/InventoryScreen';
 
 function App(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
 
   const loadGame = useGameStore(state => state.loadGame);
   const saveGame = useGameStore(state => state.saveGame);
@@ -46,6 +48,12 @@ function App(): React.JSX.Element {
 
   const handleSelectSkill = (skillType: SkillType) => {
     setSelectedSkill(skillType);
+    setInventoryOpen(false);
+  };
+
+  const handleSelectInventory = () => {
+    setInventoryOpen(true);
+    setSelectedSkill(null);
   };
 
   const toggleSidebar = () => {
@@ -74,6 +82,8 @@ function App(): React.JSX.Element {
           selectedSkill={selectedSkill}
           onClose={() => setSidebarOpen(false)}
           onSelectSkill={handleSelectSkill}
+          onSelectInventory={handleSelectInventory}
+          inventorySelected={inventoryOpen}
         />
 
         <View style={styles.mainContainer}>
@@ -85,8 +95,13 @@ function App(): React.JSX.Element {
             <Text style={styles.appTitle}>⚔️ SkillForge Idle</Text>
           </View>
 
+          {/* Active Training View - Always visible when training */}
+          <ActiveTrainingView />
+
           {/* Main Content */}
-          {selectedSkill ? (
+          {inventoryOpen ? (
+            <InventoryScreen onClose={() => setInventoryOpen(false)} />
+          ) : selectedSkill ? (
             <SkillTrainingView skillType={selectedSkill} />
           ) : (
             <ScrollView contentContainerStyle={styles.scrollView}>
@@ -96,20 +111,6 @@ function App(): React.JSX.Element {
                   Tap the menu button (☰) in the top-left corner to select a skill and start training.
                 </Text>
               </View>
-        {/* Active Training View - Always visible when training */}
-        <ActiveTrainingView />
-
-        {/* Main Content */}
-        {selectedSkill ? (
-          <SkillTrainingView skillType={selectedSkill} />
-        ) : (
-          <ScrollView contentContainerStyle={styles.scrollView}>
-            <View style={styles.welcomeSection}>
-              <Text style={styles.welcomeTitle}>Welcome to SkillForge Idle!</Text>
-              <Text style={styles.welcomeText}>
-                Tap the menu button (☰) in the top-left corner to select a skill and start training.
-              </Text>
-            </View>
 
               {/* Game Status */}
               <View style={styles.section}>

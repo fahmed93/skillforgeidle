@@ -24,6 +24,8 @@ interface SidebarProps {
   selectedSkill: SkillType | null;
   onClose: () => void;
   onSelectSkill: (skillType: SkillType) => void;
+  onSelectInventory: () => void;
+  inventorySelected: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -31,6 +33,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedSkill,
   onClose,
   onSelectSkill,
+  onSelectInventory,
+  inventorySelected,
 }) => {
   const skills = getAllSkills();
   const gameState = useGameStore(state => state.gameState);
@@ -39,6 +43,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onSelectSkill(skillType);
     onClose();
   };
+
+  const handleSelectInventory = () => {
+    onSelectInventory();
+    onClose();
+  };
+
+  // Calculate total inventory count
+  const inventoryCount = Object.keys(gameState.inventory).length;
 
   return (
     <Modal
@@ -82,6 +94,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </TouchableOpacity>
               );
             })}
+
+            {/* Divider */}
+            <View style={styles.divider} />
+
+            {/* Player Section */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionHeaderText}>Player</Text>
+            </View>
+
+            {/* Inventory Item */}
+            <TouchableOpacity
+              style={[
+                styles.skillItem,
+                inventorySelected && styles.skillItemSelected,
+              ]}
+              onPress={handleSelectInventory}
+            >
+              <Text style={styles.skillIcon}>🎒</Text>
+              <View style={styles.skillInfo}>
+                <Text style={styles.skillName}>Inventory</Text>
+                <Text style={styles.skillLevel}>{inventoryCount} items</Text>
+              </View>
+              {inventorySelected && (
+                <View style={styles.selectedIndicator} />
+              )}
+            </TouchableOpacity>
           </ScrollView>
         </View>
 
@@ -175,5 +213,21 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     position: 'absolute',
     left: 0,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 12,
+    marginHorizontal: 16,
+  },
+  sectionHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#f9f9f9',
+  },
+  sectionHeaderText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });
