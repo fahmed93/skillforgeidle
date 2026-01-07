@@ -48,9 +48,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
-        {/* Overlay - closes sidebar when tapped */}
-        <Pressable style={styles.overlay} onPress={onClose} />
-
         {/* Sidebar content */}
         <View style={styles.sidebar}>
           <View style={styles.header}>
@@ -87,6 +84,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             })}
           </ScrollView>
         </View>
+
+        {/* Overlay - closes sidebar when tapped */}
+        <Pressable style={styles.overlay} onPress={onClose} />
       </View>
     </Modal>
   );
@@ -174,6 +174,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#4a90e2',
     borderRadius: 2,
     position: 'absolute',
-    right: 0,
+    left: 0,
   },
 });
