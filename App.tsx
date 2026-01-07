@@ -22,6 +22,7 @@ import { SkillType } from './src/types';
 import { formatNumber, getProgressToNextLevel } from './src/utils/xp';
 import { Sidebar } from './src/components/Sidebar';
 import { SkillTrainingView } from './src/components/SkillTrainingView';
+import { ToastContainer } from './src/components/ToastContainer';
 import { ActiveTrainingView } from './src/components/ActiveTrainingView';
 
 function App(): React.JSX.Element {
@@ -63,26 +64,38 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
 
-      {/* Sidebar */}
-      <Sidebar
-        isOpen={sidebarOpen}
-        selectedSkill={selectedSkill}
-        onClose={() => setSidebarOpen(false)}
-        onSelectSkill={handleSelectSkill}
-      />
+        {/* Sidebar */}
+        <Sidebar
+          isOpen={sidebarOpen}
+          selectedSkill={selectedSkill}
+          onClose={() => setSidebarOpen(false)}
+          onSelectSkill={handleSelectSkill}
+        />
 
-      <View style={styles.mainContainer}>
-        {/* Header with menu button */}
-        <View style={styles.appHeader}>
-          <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
-            <Text style={styles.menuIcon}>☰</Text>
-          </TouchableOpacity>
-          <Text style={styles.appTitle}>⚔️ SkillForge Idle</Text>
-        </View>
+        <View style={styles.mainContainer}>
+          {/* Header with menu button */}
+          <View style={styles.appHeader}>
+            <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
+              <Text style={styles.menuIcon}>☰</Text>
+            </TouchableOpacity>
+            <Text style={styles.appTitle}>⚔️ SkillForge Idle</Text>
+          </View>
 
+          {/* Main Content */}
+          {selectedSkill ? (
+            <SkillTrainingView skillType={selectedSkill} />
+          ) : (
+            <ScrollView contentContainerStyle={styles.scrollView}>
+              <View style={styles.welcomeSection}>
+                <Text style={styles.welcomeTitle}>Welcome to SkillForge Idle!</Text>
+                <Text style={styles.welcomeText}>
+                  Tap the menu button (☰) in the top-left corner to select a skill and start training.
+                </Text>
+              </View>
         {/* Active Training View - Always visible when training */}
         <ActiveTrainingView />
 
@@ -98,61 +111,65 @@ function App(): React.JSX.Element {
               </Text>
             </View>
 
-            {/* Game Status */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🎮 Game Status</Text>
-              <Text style={styles.text}>✓ State Management (Zustand)</Text>
-              <Text style={styles.text}>✓ Persistence (AsyncStorage)</Text>
-              <Text style={styles.text}>✓ Game Loop (60 FPS)</Text>
-              <Text style={styles.text}>✓ Auto-save (30s)</Text>
-              <Text style={styles.text}>Game Initialized: {isInitialized ? '✓' : '✗'}</Text>
-            </View>
+              {/* Game Status */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>🎮 Game Status</Text>
+                <Text style={styles.text}>✓ State Management (Zustand)</Text>
+                <Text style={styles.text}>✓ Persistence (AsyncStorage)</Text>
+                <Text style={styles.text}>✓ Game Loop (60 FPS)</Text>
+                <Text style={styles.text}>✓ Auto-save (30s)</Text>
+                <Text style={styles.text}>Game Initialized: {isInitialized ? '✓' : '✗'}</Text>
+              </View>
 
-            {/* Skills Overview */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>📊 Skills</Text>
-              {Object.entries(skills).map(([skillType, skillState]) => {
-                const progressPercent = getProgressToNextLevel(skillState.experience, skillState.level);
-                return (
-                  <View key={skillType} style={styles.skillRow}>
-                    <Text style={styles.skillName}>
-                      {skillType.charAt(0).toUpperCase() + skillType.slice(1)}
-                    </Text>
-                    <Text style={styles.skillLevel}>
-                      Lv {skillState.level} ({formatNumber(skillState.experience)} XP)
-                    </Text>
-                    <View style={styles.progressBar}>
-                      <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+              {/* Skills Overview */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>📊 Skills</Text>
+                {Object.entries(skills).map(([skillType, skillState]) => {
+                  const progressPercent = getProgressToNextLevel(skillState.experience, skillState.level);
+                  return (
+                    <View key={skillType} style={styles.skillRow}>
+                      <Text style={styles.skillName}>
+                        {skillType.charAt(0).toUpperCase() + skillType.slice(1)}
+                      </Text>
+                      <Text style={styles.skillLevel}>
+                        Lv {skillState.level} ({formatNumber(skillState.experience)} XP)
+                      </Text>
+                      <View style={styles.progressBar}>
+                        <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+                      </View>
+                      <Text style={styles.progressText}>{progressPercent.toFixed(1)}%</Text>
                     </View>
-                    <Text style={styles.progressText}>{progressPercent.toFixed(1)}%</Text>
-                  </View>
-                );
-              })}
-            </View>
+                  );
+                })}
+              </View>
 
-            {/* Inventory */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🎒 Inventory</Text>
-              {Object.keys(inventory).length === 0 ? (
-                <Text style={styles.text}>Empty</Text>
-              ) : (
-                Object.entries(inventory).map(([resourceId, quantity]) => (
-                  <Text key={resourceId} style={styles.text}>
-                    {resourceId}: {quantity}
-                  </Text>
-                ))
-              )}
-            </View>
+              {/* Inventory */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>🎒 Inventory</Text>
+                {Object.keys(inventory).length === 0 ? (
+                  <Text style={styles.text}>Empty</Text>
+                ) : (
+                  Object.entries(inventory).map(([resourceId, quantity]) => (
+                    <Text key={resourceId} style={styles.text}>
+                      {resourceId}: {quantity}
+                    </Text>
+                  ))
+                )}
+              </View>
 
-            {/* Actions */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>💾 Actions</Text>
-              <Button title="Manual Save" onPress={saveGame} />
-            </View>
-          </ScrollView>
-        )}
-      </View>
-    </SafeAreaView>
+              {/* Actions */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>💾 Actions</Text>
+                <Button title="Manual Save" onPress={saveGame} />
+              </View>
+            </ScrollView>
+          )}
+        </View>
+      </SafeAreaView>
+
+      {/* Toast container - renders on top of everything */}
+      <ToastContainer />
+    </>
   );
 }
 
