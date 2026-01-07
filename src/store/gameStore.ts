@@ -1,13 +1,15 @@
 import { create } from 'zustand';
-import { GameState, SkillType, SkillState, ResourceRequirement, ToastNotification, ToastType } from '../types';
+import { GameState, SkillType, SkillState, ResourceRequirement, ToastNotification, ToastType, UpgradeEffectType } from '../types';
 import { getLevelFromXp } from '../utils/xp';
 import { getSkillById, getActivityById } from '../data';
+import { getUpgradeById, getUpgradesForActivity } from '../data/upgrades';
 import { saveGameState, loadGameState } from '../utils/save';
 
 interface GameStore {
   // State
   gameState: GameState;
   isInitialized: boolean;
+  purchasedUpgrades: Set<string>; // Set for fast lookup
 
   // Initialization
   initializeNewGame: () => void;
@@ -33,6 +35,13 @@ interface GameStore {
   // XP and leveling
   addExperience: (skillType: SkillType, amount: number) => void;
   checkLevelUp: (skillType: SkillType) => boolean;
+
+  // Upgrade management
+  hasUpgrade: (upgradeId: string) => boolean;
+  getPurchasedUpgrades: () => string[];
+  purchaseUpgrade: (upgradeId: string) => boolean;
+  calculateTimeReduction: (skillType: SkillType, activityId: string) => number;
+  calculateProductionBonus: (skillType: SkillType, activityId: string) => number;
 
   // Toast notifications
   toasts: ToastNotification[];
@@ -90,6 +99,7 @@ function createInitialGameState(): GameState {
       musicEnabled: true,
       notificationsEnabled: true,
     },
+    purchasedUpgrades: [], // Empty array for new game
   };
 }
 
@@ -97,11 +107,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   gameState: createInitialGameState(),
   isInitialized: false,
   toasts: [],
+  purchasedUpgrades: new Set<string>(), // Initialize as empty Set
 
   initializeNewGame: () => {
     set({
       gameState: createInitialGameState(),
       isInitialized: true,
+      purchasedUpgrades: new Set<string>(),
     });
   },
 
@@ -196,7 +208,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       state.removeResource(req.resourceId, req.quantity);
     });
 
-    // Set active training
+    // Calculate time reduction from upgrades
+    const timeReduction = state.calculateTimeReduction(skillType, activityId);
+    const actualDuration = activity.durationMs * (1 - timeReduction);
+
+    // Set active training with reduced duration
     set(currentState => ({
       gameState: {
         ...currentState.gameState,
@@ -204,7 +220,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           skillType,
           activityId,
           startTime: Date.now(),
-          duration: activity.durationMs,
+          duration: actualDuration,
         },
       },
     }));
@@ -253,9 +269,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // Get new level after XP gain
     const newLevel = state.getSkillLevel(activeTraining.skillType);
 
-    // Produce resources
+    // Calculate production bonus from upgrades
+    const productionBonus = state.calculateProductionBonus(
+      activeTraining.skillType,
+      activeTraining.activityId
+    );
+
+    // Produce resources with bonus
     activity.products.forEach(product => {
-      state.addResource(product.resourceId, product.quantity);
+      const actualQuantity = product.quantity + productionBonus;
+      state.addResource(product.resourceId, actualQuantity);
     });
 
     // Create appropriate toast notification
@@ -269,7 +292,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
         message: `Level ${newLevel} ${skill?.name}!`,
         icon: '🎉',
         details: activity.products.length > 0
-          ? activity.products.map(p => `+${p.quantity} ${p.resourceId}`)
+          ? activity.products.map(p => {
+              const actualQty = p.quantity + productionBonus;
+              return `+${actualQty} ${p.resourceId}`;
+            })
           : undefined,
         duration: 4000,
       });
@@ -281,7 +307,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
         message: `+${activity.xpGained} ${skill?.name} XP`,
         icon: skill?.icon,
         details: activity.products.length > 0
-          ? activity.products.map(p => `+${p.quantity} ${p.resourceId}`)
+          ? activity.products.map(p => {
+              const actualQty = p.quantity + productionBonus;
+              return `+${actualQty} ${p.resourceId}`;
+            })
           : undefined,
       });
     }
@@ -358,17 +387,117 @@ export const useGameStore = create<GameStore>((set, get) => ({
     return false;
   },
 
+  // Upgrade management
+  hasUpgrade: (upgradeId: string) => {
+    return get().purchasedUpgrades.has(upgradeId);
+  },
+
+  getPurchasedUpgrades: () => {
+    return Array.from(get().purchasedUpgrades);
+  },
+
+  purchaseUpgrade: (upgradeId: string) => {
+    const state = get();
+    const upgrade = getUpgradeById(upgradeId);
+
+    if (!upgrade) {
+      console.warn(`Upgrade ${upgradeId} not found`);
+      return false;
+    }
+
+    // Check if already purchased
+    if (state.purchasedUpgrades.has(upgradeId)) {
+      console.warn(`Upgrade ${upgradeId} already purchased`);
+      return false;
+    }
+
+    // Check level requirement
+    const skillLevel = state.getSkillLevel(upgrade.skillType);
+    if (skillLevel < upgrade.levelRequired) {
+      console.warn(`Level ${upgrade.levelRequired} required for ${upgrade.name}`);
+      return false;
+    }
+
+    // Check resources
+    if (!state.hasResources(upgrade.cost)) {
+      console.warn(`Insufficient resources for ${upgrade.name}`);
+      return false;
+    }
+
+    // Deduct resources
+    upgrade.cost.forEach(req => {
+      state.removeResource(req.resourceId, req.quantity);
+    });
+
+    // Add to purchased upgrades
+    set(currentState => ({
+      purchasedUpgrades: new Set([...currentState.purchasedUpgrades, upgradeId]),
+    }));
+
+    // Show success toast
+    state.addToast({
+      type: ToastType.ITEM_GAIN,
+      message: `Purchased ${upgrade.name}!`,
+      icon: '⚡',
+      duration: 3000,
+    });
+
+    // Save game
+    state.saveGame();
+
+    console.log(`Purchased upgrade: ${upgrade.name}`);
+    return true;
+  },
+
+  calculateTimeReduction: (skillType: SkillType, activityId: string) => {
+    const state = get();
+    const upgrades = getUpgradesForActivity(skillType, activityId);
+
+    let totalReduction = 0;
+    upgrades.forEach(upgrade => {
+      if (
+        upgrade.effectType === UpgradeEffectType.TIME_REDUCTION &&
+        state.purchasedUpgrades.has(upgrade.id)
+      ) {
+        totalReduction += upgrade.effectValue;
+      }
+    });
+
+    // Cap at 75% reduction to prevent zero-time actions
+    return Math.min(totalReduction, 0.75);
+  },
+
+  calculateProductionBonus: (skillType: SkillType, activityId: string) => {
+    const state = get();
+    const upgrades = getUpgradesForActivity(skillType, activityId);
+
+    let totalBonus = 0;
+    upgrades.forEach(upgrade => {
+      if (
+        upgrade.effectType === UpgradeEffectType.PRODUCTION_INCREASE &&
+        state.purchasedUpgrades.has(upgrade.id)
+      ) {
+        totalBonus += upgrade.effectValue;
+      }
+    });
+
+    return totalBonus;
+  },
+
   // Persistence
   saveGame: async () => {
     try {
       const state = get().gameState;
-      // Update lastSave timestamp
-      const updatedState = {
+      const purchasedUpgrades = get().purchasedUpgrades;
+      
+      // Update lastSave timestamp and convert Set to Array
+      const updatedState: GameState = {
         ...state,
         player: {
           ...state.player,
           lastSave: Date.now(),
         },
+        purchasedUpgrades: Array.from(purchasedUpgrades),
       };
 
       set({ gameState: updatedState });
@@ -383,9 +512,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const loadedState = await loadGameState();
 
       if (loadedState) {
+        // Convert array to Set
+        const purchasedUpgrades = new Set(loadedState.purchasedUpgrades || []);
+        
         set({
           gameState: loadedState,
           isInitialized: true,
+          purchasedUpgrades,
         });
         console.log('Game loaded successfully');
       } else {
