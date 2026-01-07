@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { SkillType } from '../types';
 import { getAllSkills } from '../data';
+import { ALL_UPGRADES } from '../data/upgrades';
 import { useGameStore } from '../store/gameStore';
 
 interface SidebarProps {
@@ -25,7 +26,9 @@ interface SidebarProps {
   onClose: () => void;
   onSelectSkill: (skillType: SkillType) => void;
   onSelectInventory: () => void;
+  onSelectUpgradeShop: () => void;
   inventorySelected: boolean;
+  upgradeShopSelected: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -34,10 +37,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   onSelectSkill,
   onSelectInventory,
+  onSelectUpgradeShop,
   inventorySelected,
+  upgradeShopSelected,
 }) => {
   const skills = getAllSkills();
   const gameState = useGameStore(state => state.gameState);
+  const purchasedUpgrades = useGameStore(state => state.purchasedUpgrades);
 
   const handleSelectSkill = (skillType: SkillType) => {
     onSelectSkill(skillType);
@@ -49,8 +55,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onClose();
   };
 
+  const handleSelectUpgradeShop = () => {
+    onSelectUpgradeShop();
+    onClose();
+  };
+
   // Calculate total inventory count
   const inventoryCount = Object.keys(gameState.inventory).length;
+
+  // Calculate total upgrades count
+  const purchasedCount = purchasedUpgrades.size;
 
   return (
     <Modal
@@ -117,6 +131,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <Text style={styles.skillLevel}>{inventoryCount} items</Text>
               </View>
               {inventorySelected && (
+                <View style={styles.selectedIndicator} />
+              )}
+            </TouchableOpacity>
+
+            {/* Upgrade Shop Item */}
+            <TouchableOpacity
+              style={[
+                styles.skillItem,
+                upgradeShopSelected && styles.skillItemSelected,
+              ]}
+              onPress={handleSelectUpgradeShop}
+            >
+              <Text style={styles.skillIcon}>⚡</Text>
+              <View style={styles.skillInfo}>
+                <Text style={styles.skillName}>Upgrade Shop</Text>
+                <Text style={styles.skillLevel}>{purchasedCount}/{ALL_UPGRADES.length}</Text>
+              </View>
+              {upgradeShopSelected && (
                 <View style={styles.selectedIndicator} />
               )}
             </TouchableOpacity>

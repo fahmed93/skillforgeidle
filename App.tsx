@@ -25,12 +25,14 @@ import { SkillTrainingView } from './src/components/SkillTrainingView';
 import { ToastContainer } from './src/components/ToastContainer';
 import { ActiveTrainingView } from './src/components/ActiveTrainingView';
 import { InventoryScreen } from './src/components/InventoryScreen';
+import { UpgradeShopScreen } from './src/components/UpgradeShopScreen';
 
 function App(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<SkillType | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [upgradeShopOpen, setUpgradeShopOpen] = useState(false);
 
   const loadGame = useGameStore(state => state.loadGame);
   const saveGame = useGameStore(state => state.saveGame);
@@ -49,10 +51,18 @@ function App(): React.JSX.Element {
   const handleSelectSkill = (skillType: SkillType) => {
     setSelectedSkill(skillType);
     setInventoryOpen(false);
+    setUpgradeShopOpen(false);
   };
 
   const handleSelectInventory = () => {
     setInventoryOpen(true);
+    setSelectedSkill(null);
+    setUpgradeShopOpen(false);
+  };
+
+  const handleSelectUpgradeShop = () => {
+    setUpgradeShopOpen(true);
+    setInventoryOpen(false);
     setSelectedSkill(null);
   };
 
@@ -83,7 +93,9 @@ function App(): React.JSX.Element {
           onClose={() => setSidebarOpen(false)}
           onSelectSkill={handleSelectSkill}
           onSelectInventory={handleSelectInventory}
+          onSelectUpgradeShop={handleSelectUpgradeShop}
           inventorySelected={inventoryOpen}
+          upgradeShopSelected={upgradeShopOpen}
         />
 
         <View style={styles.mainContainer}>
@@ -99,7 +111,9 @@ function App(): React.JSX.Element {
           <ActiveTrainingView />
 
           {/* Main Content */}
-          {inventoryOpen ? (
+          {upgradeShopOpen ? (
+            <UpgradeShopScreen onClose={() => setUpgradeShopOpen(false)} />
+          ) : inventoryOpen ? (
             <InventoryScreen onClose={() => setInventoryOpen(false)} />
           ) : selectedSkill ? (
             <SkillTrainingView skillType={selectedSkill} />
