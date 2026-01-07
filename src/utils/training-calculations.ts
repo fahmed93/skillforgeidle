@@ -33,7 +33,12 @@ export function calculateTimeToNextLevel(
 
   // Calculate XP needed for next level
   const xpForNextLevel = totalXpForLevel(currentLevel + 1);
-  const xpNeeded = xpForNextLevel - currentXp;
+  const xpNeeded = Math.max(0, xpForNextLevel - currentXp);
+
+  // If already at or past next level XP, return 0
+  if (xpNeeded <= 0) {
+    return 0;
+  }
 
   // Calculate number of actions needed
   const actionsNeeded = Math.ceil(xpNeeded / activityXp);

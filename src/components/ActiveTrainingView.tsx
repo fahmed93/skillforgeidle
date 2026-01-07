@@ -29,14 +29,14 @@ export const ActiveTrainingView: React.FC = () => {
 
   const { progress, stopActivity } = useSkillTraining();
 
-  // Get skill and activity details (need this before useMemo hooks)
+  // Get skill and activity details (need this before early return)
   const skillType = activeTraining?.skillType;
   const activityId = activeTraining?.activityId;
   const skill = skillType ? getSkillById(skillType) : null;
   const activity = skillType && activityId ? getActivityById(skillType, activityId) : null;
   const skillState = skillType ? skills[skillType] : null;
 
-  // Calculate time to next level (hook must be called unconditionally)
+  // Calculate time to next level
   const timeToNextLevel = useMemo(() => {
     if (!skillState || !activity || skillState.level >= 99) {
       return 0;
@@ -50,7 +50,7 @@ export const ActiveTrainingView: React.FC = () => {
     );
   }, [skillState, activity]);
 
-  // Calculate time until out of materials (hook must be called unconditionally)
+  // Calculate time until out of materials
   const timeUntilOutOfMaterials = useMemo(() => {
     if (!activity) {
       return null;
@@ -99,7 +99,7 @@ export const ActiveTrainingView: React.FC = () => {
           <View style={[styles.progressFill, { width: `${Math.min(progress, 100)}%` }]} />
         </View>
         <Text style={styles.progressText}>
-          {progress.toFixed(0)}%
+          {Math.round(progress)}%
         </Text>
       </View>
 
