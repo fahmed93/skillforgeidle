@@ -215,11 +215,11 @@ const styles = StyleSheet.create({
   timeEstimates: {
     flexDirection: 'row',
     flex: 1,
-    gap: 16,
   },
   timeItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 16,
   },
   timeLabel: {
     fontSize: 12,

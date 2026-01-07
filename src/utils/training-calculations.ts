@@ -26,6 +26,11 @@ export function calculateTimeToNextLevel(
     return 0;
   }
 
+  // Guard against invalid activity XP
+  if (activityXp <= 0) {
+    return 0;
+  }
+
   // Calculate XP needed for next level
   const xpForNextLevel = totalXpForLevel(currentLevel + 1);
   const xpNeeded = xpForNextLevel - currentXp;
