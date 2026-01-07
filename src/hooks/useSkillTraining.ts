@@ -41,14 +41,22 @@ export function useSkillTraining(): UseSkillTrainingReturn {
       return;
     }
 
-    // Initial calculation
+    // Calculation function
     const calculateProgress = () => {
       const elapsed = Date.now() - activeTraining.startTime;
       const progressPercent = (elapsed / activeTraining.duration) * 100;
       const remaining = activeTraining.duration - elapsed;
 
-      setProgress(Math.min(progressPercent, 100));
-      setTimeRemaining(Math.max(remaining, 0));
+      const clampedProgress = Math.min(progressPercent, 100);
+      const clampedRemaining = Math.max(remaining, 0);
+
+      setProgress(clampedProgress);
+      setTimeRemaining(clampedRemaining);
+
+      // Stop updating when complete (game loop will handle the action completion)
+      if (clampedProgress >= 100) {
+        clearInterval(intervalId);
+      }
     };
 
     // Calculate immediately
