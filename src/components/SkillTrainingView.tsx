@@ -16,7 +16,7 @@ import { SkillType } from '../types';
 import { getSkillById } from '../data';
 import { useGameStore } from '../store/gameStore';
 import { useSkillTraining } from '../hooks/useSkillTraining';
-import { getProgressToNextLevel, formatNumber } from '../utils/xp';
+import { formatNumber } from '../utils/xp';
 import { ActivityCard } from './ActivityCard';
 
 interface SkillTrainingViewProps {
@@ -47,11 +47,6 @@ export const SkillTrainingView: React.FC<SkillTrainingViewProps> = ({
     );
   }
 
-  const progressPercent = getProgressToNextLevel(
-    skillState.experience,
-    skillState.level
-  );
-
   const handleStartTraining = (activityId: string) => {
     const success = startActivity(skillType, activityId);
     if (!success) {
@@ -79,13 +74,6 @@ export const SkillTrainingView: React.FC<SkillTrainingViewProps> = ({
             {formatNumber(skillState.experience)} XP
           </Text>
         </View>
-
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-        </View>
-        <Text style={styles.progressText}>
-          {progressPercent.toFixed(1)}% to next level
-        </Text>
       </View>
 
       {/* Activities Section */}
@@ -163,7 +151,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
   },
   levelText: {
     fontSize: 20,
@@ -173,23 +160,6 @@ const styles = StyleSheet.create({
   xpText: {
     fontSize: 16,
     color: '#666',
-  },
-  progressBar: {
-    height: 24,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 4,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#4a90e2',
-    borderRadius: 12,
-  },
-  progressText: {
-    fontSize: 12,
-    color: '#888',
-    textAlign: 'right',
   },
   activitiesSection: {
     padding: 16,
