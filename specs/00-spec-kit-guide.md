@@ -128,6 +128,9 @@ Specs are living documents:
 
 ### ✅ Completed Specs
 - **Core Game System**: XP formulas, save system design
+  - [Specification](01-core-game-system.md)
+  - [Implementation Plan](01-core-game-system.plan.md) ✨ NEW
+  - [Task Breakdown](01-core-game-system.tasks.md) ✨ NEW
 - **Skill System**: All 6 skills with 8-10 activities each
 - **User Interface**: Screen layouts and navigation
 - **Future Features**: Roadmap through Phase 6
@@ -136,6 +139,7 @@ Specs are living documents:
 - React Native project setup
 - Basic game state management
 - Skill data implementation
+- Core Game System implementation (ready to start)
 
 ### 📋 Not Started
 - Full UI implementation
