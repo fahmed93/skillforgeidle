@@ -5,7 +5,7 @@
  * Supports different toast types with unique styling and auto-dismissal.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -38,6 +38,24 @@ export const Toast: React.FC<ToastProps> = ({
   const opacity = useRef(new Animated.Value(0)).current;
   const dismissTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const handleDismiss = useCallback(() => {
+    // Exit animation
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: 100,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onDismiss(notification.id);
+    });
+  }, [translateY, opacity, onDismiss, notification.id]);
+
   useEffect(() => {
     // Entry animation
     Animated.parallel([
@@ -64,25 +82,7 @@ export const Toast: React.FC<ToastProps> = ({
         clearTimeout(dismissTimerRef.current);
       }
     };
-  }, []);
-
-  const handleDismiss = () => {
-    // Exit animation
-    Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: 100,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onDismiss(notification.id);
-    });
-  };
+  }, [translateY, opacity, handleDismiss, notification.duration]);
 
   const getToastStyle = () => {
     switch (notification.type) {
