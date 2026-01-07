@@ -19,7 +19,9 @@ import { ToastType } from '../types';
 
 // Constants for layout
 const TOAST_STACK_OFFSET = 68; // Vertical spacing between stacked toasts
-const TOAST_HORIZONTAL_MARGIN = 16; // Margin from screen edges
+const TOAST_BOTTOM_MARGIN = 16; // Margin from bottom of screen
+const TOAST_HORIZONTAL_PADDING = 16; // Internal padding for toast content
+const TOAST_SIDE_MARGIN = 16; // Minimum margin from screen edges
 
 interface ToastProps {
   notification: ToastNotification;
@@ -32,7 +34,7 @@ export const Toast: React.FC<ToastProps> = ({
   onDismiss,
   index,
 }) => {
-  const translateY = useRef(new Animated.Value(-100)).current;
+  const translateY = useRef(new Animated.Value(100)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const dismissTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -68,7 +70,7 @@ export const Toast: React.FC<ToastProps> = ({
     // Exit animation
     Animated.parallel([
       Animated.timing(translateY, {
-        toValue: -100,
+        toValue: 100,
         duration: 200,
         useNativeDriver: true,
       }),
@@ -115,7 +117,7 @@ export const Toast: React.FC<ToastProps> = ({
           opacity,
           transform: [
             { translateY },
-            { translateY: index * TOAST_STACK_OFFSET },
+            { translateY: -index * TOAST_STACK_OFFSET }, // Negative to stack upward
           ],
         },
       ]}
@@ -154,10 +156,9 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: TOAST_HORIZONTAL_MARGIN,
-    left: TOAST_HORIZONTAL_MARGIN,
-    right: TOAST_HORIZONTAL_MARGIN,
-    width: width - (TOAST_HORIZONTAL_MARGIN * 2),
+    bottom: TOAST_BOTTOM_MARGIN,
+    alignSelf: 'center',
+    maxWidth: width - (TOAST_SIDE_MARGIN * 2),
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: TOAST_HORIZONTAL_PADDING,
   },
   icon: {
     fontSize: 28,
