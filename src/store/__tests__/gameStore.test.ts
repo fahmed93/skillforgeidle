@@ -106,7 +106,7 @@ describe('gameStore', () => {
       const newActivities =
         state.gameState.skills[SkillType.WOODCUTTING].unlockedActivities
           .length;
-      
+
       expect(newActivities).toBeGreaterThan(initialActivities);
     });
   });
@@ -117,7 +117,7 @@ describe('gameStore', () => {
       const success = store.startTraining(SkillType.WOODCUTTING, 'regular_tree');
 
       expect(success).toBe(true);
-      
+
       // Get fresh state after startTraining
       const currentState = useGameStore.getState();
       expect(currentState.gameState.activeTraining).not.toBeNull();
@@ -132,7 +132,7 @@ describe('gameStore', () => {
       const success = store.startTraining(SkillType.WOODCUTTING, 'magic_tree');
 
       expect(success).toBe(false);
-      
+
       const currentState = useGameStore.getState();
       expect(currentState.gameState.activeTraining).toBeNull();
     });
