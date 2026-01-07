@@ -1,0 +1,20 @@
+---
+# Spec Kit Configuration for SkillForge Idle
+project_name: SkillForge Idle
+project_type: react-native
+ai_agent: github-copilot
+version: 1.0.0
+
+# Project settings
+settings:
+  spec_directory: specs
+  memory_directory: .specify/memory
+  scripts_directory: .specify/scripts
+  
+# Development principles
+principles:
+  - Incremental idle game mechanics similar to Melvor Idle and RuneScape
+  - Clean, maintainable React Native code
+  - Test-driven development where applicable
+  - Progressive feature implementation
+  - Mobile-first design approach
