@@ -2,6 +2,8 @@
 
 An incremental idle game inspired by RuneScape and Melvor Idle, built with React Native.
 
+🎮 **[Play the Web Version](https://fahmed93.github.io/skillforgeidle/)**
+
 ## 🎮 Game Overview
 
 SkillForge Idle is a mobile incremental game where players train various skills from level 1 to 99. Each skill offers multiple training activities that unlock as you progress, providing a satisfying progression system with meaningful choices.
@@ -53,6 +55,9 @@ cd skillforgeidle
 # Install dependencies
 npm install
 
+# Run on Web
+npm run web
+
 # For iOS (Mac only)
 cd ios && pod install && cd ..
 
@@ -61,6 +66,15 @@ npm run ios
 
 # Run on Android
 npm run android
+```
+
+### Building for Production
+
+```bash
+# Build web version for deployment
+npm run build:web
+
+# Output will be in the dist/ directory
 ```
 
 ## 🏗️ Project Structure
@@ -138,6 +152,22 @@ npm run lint
 # Type checking
 npx tsc --noEmit
 ```
+
+## 🚀 Deployment
+
+The game is automatically deployed to GitHub Pages when changes are pushed to the `main` branch. The GitHub Actions workflow:
+
+1. Installs dependencies
+2. Builds the web version using webpack
+3. Deploys to GitHub Pages
+
+To enable GitHub Pages deployment for your fork:
+
+1. Go to your repository Settings → Pages
+2. Under "Source", select "GitHub Actions"
+3. Push to the `main` branch to trigger deployment
+
+The site will be available at: `https://<username>.github.io/skillforgeidle/`
 
 ## 📝 Contributing
 
