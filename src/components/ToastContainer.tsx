@@ -2,7 +2,7 @@
  * ToastContainer Component
  *
  * Manages and displays toast notifications from the game store.
- * Limits visible toasts to 3 and positions them absolutely at the bottom of the screen.
+ * Limits visible toasts to 3 and positions them absolutely at the top of the screen.
  */
 
 import React from 'react';
