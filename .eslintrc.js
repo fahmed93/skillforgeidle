@@ -6,5 +6,6 @@ module.exports = {
   rules: {
     'react-native/no-inline-styles': 'warn',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'prettier/prettier': 'off', // Temporarily disable due to compatibility issue
   },
 };
