@@ -402,7 +402,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   // Toast actions
   addToast: (toast: Omit<ToastNotification, 'id' | 'timestamp'>) => {
-    const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     const timestamp = Date.now();
 
     set(state => {
@@ -413,7 +413,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         duration: toast.duration || 3500,
       };
 
-      // Limit queue to 10 toasts max
+      // Limit queue to 10 toasts max (only first 3 are visible)
       const updatedToasts = [...state.toasts, newToast].slice(-10);
 
       return { toasts: updatedToasts };

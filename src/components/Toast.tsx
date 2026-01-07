@@ -17,6 +17,10 @@ import {
 import type { ToastNotification } from '../types';
 import { ToastType } from '../types';
 
+// Constants for layout
+const TOAST_STACK_OFFSET = 68; // Vertical spacing between stacked toasts
+const TOAST_HORIZONTAL_MARGIN = 16; // Margin from screen edges
+
 interface ToastProps {
   notification: ToastNotification;
   onDismiss: (id: string) => void;
@@ -111,7 +115,7 @@ export const Toast: React.FC<ToastProps> = ({
           opacity,
           transform: [
             { translateY },
-            { translateY: index * 68 }, // Stack offset
+            { translateY: index * TOAST_STACK_OFFSET },
           ],
         },
       ]}
@@ -150,10 +154,10 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 16,
-    left: 16,
-    right: 16,
-    width: width - 32,
+    top: TOAST_HORIZONTAL_MARGIN,
+    left: TOAST_HORIZONTAL_MARGIN,
+    right: TOAST_HORIZONTAL_MARGIN,
+    width: width - (TOAST_HORIZONTAL_MARGIN * 2),
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
