@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { GameState, SkillType, SkillState, ResourceRequirement } from '../types';
+import { GameState, SkillType, SkillState, ResourceRequirement, ToastNotification, ToastType } from '../types';
 import { getLevelFromXp } from '../utils/xp';
 import { getSkillById, getActivityById } from '../data';
 import { saveGameState, loadGameState } from '../utils/save';
@@ -33,6 +33,12 @@ interface GameStore {
   // XP and leveling
   addExperience: (skillType: SkillType, amount: number) => void;
   checkLevelUp: (skillType: SkillType) => boolean;
+
+  // Toast notifications
+  toasts: ToastNotification[];
+  addToast: (toast: Omit<ToastNotification, 'id' | 'timestamp'>) => void;
+  removeToast: (id: string) => void;
+  clearAllToasts: () => void;
 
   // Persistence (will be implemented in Phase 2)
   saveGame: () => Promise<void>;
@@ -90,6 +96,7 @@ function createInitialGameState(): GameState {
 export const useGameStore = create<GameStore>((set, get) => ({
   gameState: createInitialGameState(),
   isInitialized: false,
+  toasts: [],
 
   initializeNewGame: () => {
     set({
@@ -237,13 +244,47 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const activity = getActivityById(activeTraining.skillType, activeTraining.activityId);
     if (!activity) {return;}
 
+    // Capture current level before XP gain
+    const previousLevel = state.getSkillLevel(activeTraining.skillType);
+
     // Award XP
     state.addExperience(activeTraining.skillType, activity.xpGained);
+
+    // Get new level after XP gain
+    const newLevel = state.getSkillLevel(activeTraining.skillType);
 
     // Produce resources
     activity.products.forEach(product => {
       state.addResource(product.resourceId, product.quantity);
     });
+
+    // Create appropriate toast notification
+    const skill = getSkillById(activeTraining.skillType);
+
+    if (newLevel > previousLevel) {
+      // Level up toast
+      state.addToast({
+        type: ToastType.LEVEL_UP,
+        skillType: activeTraining.skillType,
+        message: `Level ${newLevel} ${skill?.name}!`,
+        icon: '🎉',
+        details: activity.products.length > 0
+          ? activity.products.map(p => `+${p.quantity} ${p.resourceId}`)
+          : undefined,
+        duration: 4000,
+      });
+    } else {
+      // Regular XP gain toast
+      state.addToast({
+        type: ToastType.XP_GAIN,
+        skillType: activeTraining.skillType,
+        message: `+${activity.xpGained} ${skill?.name} XP`,
+        icon: skill?.icon,
+        details: activity.products.length > 0
+          ? activity.products.map(p => `+${p.quantity} ${p.resourceId}`)
+          : undefined,
+      });
+    }
 
     // Reset training start time to auto-continue
     set(currentState => ({
@@ -357,5 +398,35 @@ export const useGameStore = create<GameStore>((set, get) => ({
       // On error, initialize new game
       get().initializeNewGame();
     }
+  },
+
+  // Toast actions
+  addToast: (toast: Omit<ToastNotification, 'id' | 'timestamp'>) => {
+    const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const timestamp = Date.now();
+
+    set(state => {
+      const newToast: ToastNotification = {
+        ...toast,
+        id,
+        timestamp,
+        duration: toast.duration || 3500,
+      };
+
+      // Limit queue to 10 toasts max
+      const updatedToasts = [...state.toasts, newToast].slice(-10);
+
+      return { toasts: updatedToasts };
+    });
+  },
+
+  removeToast: (id: string) => {
+    set(state => ({
+      toasts: state.toasts.filter(toast => toast.id !== id),
+    }));
+  },
+
+  clearAllToasts: () => {
+    set({ toasts: [] });
   },
 }));
