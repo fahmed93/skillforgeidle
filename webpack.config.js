@@ -7,7 +7,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
-    publicPath: '/skillforgeidle/',
+    publicPath: process.env.PUBLIC_PATH || '/skillforgeidle/',
   },
   resolve: {
     extensions: ['.web.js', '.js', '.web.tsx', '.tsx', '.web.ts', '.ts', '.json'],
@@ -23,6 +23,7 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
+            cacheDirectory: true,
             presets: [
               '@babel/preset-env',
               '@babel/preset-react',
