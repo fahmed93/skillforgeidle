@@ -75,3 +75,21 @@ export interface Resource {
   description: string;
   icon: string;
 }
+
+export enum ToastType {
+  XP_GAIN = 'xp_gain',
+  ITEM_GAIN = 'item_gain',
+  LEVEL_UP = 'level_up',
+  ACTIVITY_UNLOCK = 'activity_unlock',
+}
+
+export interface ToastNotification {
+  id: string;
+  type: ToastType;
+  skillType?: SkillType;
+  message: string;
+  details?: string[];
+  icon?: string;
+  duration?: number;
+  timestamp: number;
+}
