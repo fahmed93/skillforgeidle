@@ -67,6 +67,7 @@ export interface GameState {
   inventory: Record<string, number>;
   activeTraining: ActiveTraining | null;
   settings: GameSettings;
+  purchasedUpgrades: string[]; // Array for JSON serialization (converted to Set in store)
 }
 
 export interface Resource {
@@ -94,4 +95,22 @@ export interface ToastNotification {
   icon?: string;
   duration?: number;
   timestamp: number;
+}
+
+export enum UpgradeEffectType {
+  TIME_REDUCTION = 'time_reduction',
+  PRODUCTION_INCREASE = 'production_increase',
+}
+
+export interface Upgrade {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  skillType: SkillType;
+  levelRequired: number;
+  cost: ResourceRequirement[];
+  effectType: UpgradeEffectType;
+  effectValue: number; // 0.10 for 10% time reduction, or 1/2/3 for production increase
+  appliesToActivities: string[]; // Empty array means applies to all activities in the skill
 }
