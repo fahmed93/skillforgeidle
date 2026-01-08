@@ -12,7 +12,6 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
-  Dimensions,
 } from 'react-native';
 import type { ToastNotification } from '../types';
 import { ToastType } from '../types';
@@ -149,15 +148,11 @@ export const Toast: React.FC<ToastProps> = ({
   );
 };
 
-const { width } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     top: TOAST_HORIZONTAL_MARGIN,
-    left: TOAST_HORIZONTAL_MARGIN,
-    right: TOAST_HORIZONTAL_MARGIN,
-    width: width - (TOAST_HORIZONTAL_MARGIN * 2),
+    alignSelf: 'center',
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -166,7 +161,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   touchable: {
-    width: '100%',
+    flexDirection: 'row',
   },
   content: {
     flexDirection: 'row',
@@ -179,11 +174,13 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
+    alignItems: 'center',
   },
   message: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
+    textAlign: 'center',
   },
   detailsContainer: {
     marginTop: 4,
@@ -192,6 +189,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '400',
     marginTop: 2,
+    textAlign: 'center',
   },
   defaultToast: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
