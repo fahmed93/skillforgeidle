@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   textContainer: {
+    flex: 1,
     alignItems: 'center',
   },
   message: {
